@@ -2,21 +2,20 @@
 
 A small REST API built with **FastAPI**, **Pydantic**, and **SQLModel** (async SQLAlchemy). It manages **Users** and **Projects** with a one-to-many relationship (one user, many projects).
 
-## Run with Docker (no manual steps)
+## Run with Docker (recommended)
 
 From the project root:
 
 ```bash
-docker-compose up
+docker compose up --build
 ```
 
 - API: **http://localhost:8000**
 - Docs: **http://localhost:8000/docs**
-- Database schema is created automatically on startup.
+- PostgreSQL runs in a container; the API connects via `DATABASE_URL` from `docker-compose.yml`.
+- Database schema is created automatically on startup (with retries until the DB is ready).
 
 ## Run locally (without Docker)
-
-Uses **SQLite** by default (no PostgreSQL needed):
 
 ```bash
 pip install -r requirements.txt
@@ -24,9 +23,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 - API: **http://localhost:8000**
-- Data is stored in `local.db` in the project root.
-
-To use PostgreSQL instead, set `DATABASE_URL` (e.g. `postgresql+asyncpg://user:password@localhost:5432/appdb`).
+- By default the app uses the URL in `app/config.py` (PostgreSQL at `localhost:5432`). To override, set **`DATABASE_URL`** (e.g. `postgresql+asyncpg://user:password@localhost:5432/appdb` or `sqlite+aiosqlite:///./local.db` for SQLite).
 
 ## API Endpoints
 
@@ -44,9 +41,9 @@ To use PostgreSQL instead, set `DATABASE_URL` (e.g. `postgresql+asyncpg://user:p
 ## Tech stack
 
 - **FastAPI** — API framework
-- **Pydantic** — Request/response validation
+- **Pydantic** — Request/response validation (with **email-validator** for `EmailStr`)
 - **SQLModel** — ORM (SQLAlchemy + Pydantic)
-- **PostgreSQL** — Database (via Docker)
+- **PostgreSQL** — Database (Docker); configurable via **DATABASE_URL**
 - **Async** — Async engine and sessions, dependency-injected DB session
 
 ## Tests

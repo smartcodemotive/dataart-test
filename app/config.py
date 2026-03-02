@@ -1,13 +1,14 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+asyncpg://postgres:ahsus@localhost:5432/dataart"
-    # Default: SQLite for local dev (no Docker). Override with DATABASE_URL when using docker-compose.
-    # database_url: str = "sqlite+aiosqlite:///./local.db"
+    database_url: str = Field(
+        default="postgresql+asyncpg://postgres:ahsus@localhost:5432/dataart",
+        validation_alias="DATABASE_URL",
+    )
 
-    class Config:
-        env_file = ".env"
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 
 settings = Settings()

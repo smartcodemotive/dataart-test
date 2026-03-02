@@ -1,5 +1,7 @@
+import asyncio
 from collections.abc import AsyncGenerator
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
@@ -32,5 +34,14 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def create_db_schema() -> None:
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
+    last_error = None
+    for attempt in range(5):
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(SQLModel.metadata.create_all)
+            return
+        except OperationalError as e:
+            last_error = e
+            if attempt < 4:
+                await asyncio.sleep(1)
+    raise last_error
